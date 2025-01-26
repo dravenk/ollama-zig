@@ -34,9 +34,12 @@ See [types.zig](ollama/src/types.zig) for more information on the response types
 
 ## Streaming responses
 
-Response streaming can be enabled by setting `stream=True`.
+Response streaming can be enabled by setting `.stream = true`.
 
 ```zig
+var req = try ollama.chat(.{ .model = "llama3.2", .stream = true, .messages = &.{
+    .{ .role = "user", .content = "Why is the sky blue?" },
+} });
 ```
 
 ## API
@@ -46,10 +49,9 @@ The Ollama Zig library's API is designed around the [Ollama REST API](https://gi
 ### Chat
 
 ```zig
-const message = &[_]Ollama.chatOptions.message{
+var req = try ollama.chat(.{ .model = "llama3.2", .stream = true, .messages = &.{
     .{ .role = "user", .content = "Why is the sky blue?" },
-};
-const response = try ollama.chat(.{ .model = "llama3.2", .messages = message });
+} });
 ```
 
 ### Generate

@@ -2,11 +2,11 @@ const std = @import("std");
 
 pub const RequestOptions = @import("request_options.zig").RequestOptions;
 
-pub const OllamaResponse = struct {
+pub const ChatResponse = struct {
     // Required fields
     model: []const u8 = "",
     created_at: []const u8 = "",
-    message: OllamaResponseMessage = undefined,
+    message: ChatResponseMessage = undefined,
     done: bool = false,
 
     // Optional fields
@@ -18,7 +18,7 @@ pub const OllamaResponse = struct {
     eval_count: ?u32 = null,
     eval_duration: ?u64 = null,
 
-    pub fn to_json(self: OllamaResponse, allocator: std.mem.Allocator) ![]const u8 {
+    pub fn to_json(self: ChatResponse, allocator: std.mem.Allocator) ![]const u8 {
         var out = std.ArrayList(u8).init(allocator);
         defer out.deinit();
         try std.json.stringify(self, .{
@@ -28,7 +28,7 @@ pub const OllamaResponse = struct {
     }
 };
 
-pub const OllamaResponseMessage = struct {
+pub const ChatResponseMessage = struct {
     role: []const u8,
     content: []const u8,
 };
@@ -46,13 +46,16 @@ pub const Ollama = struct {
     pub fn init(self: Self) !Ollama {
         return .{ .allocator = self.allocator };
     }
+    pub fn deinit(self: *Self) void {
+        self.allocator = undefined;
+    }
 
-    pub fn full_response(self: *Self, req: *std.http.Client.Request) ![]OllamaResponse {
+    pub fn full_response(self: *Self, req: *std.http.Client.Request) ![]ChatResponse {
         var reader = req.reader();
         var buffer = std.ArrayList(u8).init(self.allocator);
         defer self.allocator.free(buffer.items);
 
-        var responses = std.ArrayList(OllamaResponse).init(self.allocator);
+        var responses = std.ArrayList(ChatResponse).init(self.allocator);
         defer responses.deinit();
 
         while (true) {
@@ -63,7 +66,7 @@ pub const Ollama = struct {
             // If we see a newline, we have a full response.
             if (byte == '\n') {
                 const response_slice = try buffer.toOwnedSlice();
-                const response_object = try std.json.parseFromSlice(OllamaResponse, self.allocator, response_slice, .{ .ignore_unknown_fields = true });
+                const response_object = try std.json.parseFromSlice(ChatResponse, self.allocator, response_slice, .{ .ignore_unknown_fields = true });
                 const ollama_response = response_object.value;
                 try responses.append(ollama_response);
                 buffer.clearRetainingCapacity();
