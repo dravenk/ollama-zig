@@ -2,6 +2,37 @@ const std = @import("std");
 
 pub const RequestOptions = @import("request_options.zig").RequestOptions;
 
+pub const OllamaResponse = struct {
+    // Required fields
+    model: []const u8 = "",
+    created_at: []const u8 = "",
+    message: OllamaResponseMessage = undefined,
+    done: bool = false,
+
+    // Optional fields
+    done_reason: ?[]const u8 = null,
+    total_duration: ?u64 = null,
+    load_duration: ?u64 = null,
+    prompt_eval_count: ?u32 = null,
+    prompt_eval_duration: ?u64 = null,
+    eval_count: ?u32 = null,
+    eval_duration: ?u64 = null,
+
+    pub fn to_json(self: OllamaResponse, allocator: std.mem.Allocator) ![]const u8 {
+        var out = std.ArrayList(u8).init(allocator);
+        defer out.deinit();
+        try std.json.stringify(self, .{
+            .emit_null_optional_fields = false,
+        }, out.writer());
+        return try out.toOwnedSlice();
+    }
+};
+
+pub const OllamaResponseMessage = struct {
+    role: []const u8,
+    content: []const u8,
+};
+
 pub const Ollama = struct {
     const Self = @This();
 
@@ -16,11 +47,14 @@ pub const Ollama = struct {
         return .{ .allocator = self.allocator };
     }
 
-    pub fn full_response(self: *Self, req: *std.http.Client.Request) ![]u8 {
+    pub fn full_response(self: *Self, req: *std.http.Client.Request) ![]OllamaResponse {
         var reader = req.reader();
         var buffer = std.ArrayList(u8).init(self.allocator);
         defer self.allocator.free(buffer.items);
-        var full_content = std.ArrayList(u8).init(self.allocator);
+
+        var responses = std.ArrayList(OllamaResponse).init(self.allocator);
+        defer responses.deinit();
+
         while (true) {
             const byte = reader.readByte() catch break;
             if (byte == 0) break;
@@ -30,14 +64,13 @@ pub const Ollama = struct {
             if (byte == '\n') {
                 const response_slice = try buffer.toOwnedSlice();
                 const response_object = try std.json.parseFromSlice(OllamaResponse, self.allocator, response_slice, .{ .ignore_unknown_fields = true });
-                // try chat_response.append(response_object.value);
-                const message_content = response_object.value.message.?.content;
-                for (message_content) |c| try full_content.append(c);
+                const ollama_response = response_object.value;
+                try responses.append(ollama_response);
                 buffer.clearRetainingCapacity();
+                if (ollama_response.done) break;
             }
         }
-
-        return try full_content.toOwnedSlice();
+        return try responses.toOwnedSlice();
     }
 
     // model='llama3.2', messages=[{'role': 'user', 'content': 'Why is the sky blue?'}]
@@ -98,22 +131,3 @@ fn fetch(client: *std.http.Client, options: std.http.Client.FetchOptions) !std.h
     try req.wait();
     return req;
 }
-
-pub const OllamaResponse = struct {
-    model: ?[]const u8 = null,
-    created_at: ?[]const u8 = null,
-    message: ?OllamaResponseMessage = null,
-    done_reason: ?[]const u8 = null,
-    done: ?bool = null,
-    total_duration: ?u64 = null,
-    load_duration: ?u64 = null,
-    prompt_eval_count: ?u32 = null,
-    prompt_eval_duration: ?u64 = null,
-    eval_count: ?u32 = null,
-    eval_duration: ?u64 = null,
-};
-
-pub const OllamaResponseMessage = struct {
-    role: []const u8,
-    content: []const u8,
-};
