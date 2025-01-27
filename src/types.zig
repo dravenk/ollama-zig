@@ -24,6 +24,13 @@ pub const ResponseError = struct {
     }
 };
 
+pub const Format = enum {
+    json,
+    markdown,
+    html,
+    text,
+};
+
 pub const Image = struct {
     value: union(enum) {
         path: []const u8,
@@ -92,108 +99,195 @@ pub const Message = struct {
     role: Role,
     content: ?[]const u8 = null,
     images: ?[]Image = null,
-    tool_calls: ?[]ToolCall = null,
+    // tool_calls: ?[]ToolCall = null,
+    // pub const ToolCall = struct {
+    //     function: Function,
 
-    pub const ToolCall = struct {
-        function: Function,
+    //     pub const Function = struct {
+    //         name: []const u8,
+    //         arguments: std.StringHashMap(json.Value),
+    //     };
+    // };
+};
 
-        pub const Function = struct {
-            name: []const u8,
-            arguments: std.StringHashMap(json.Value),
-        };
+pub const Tool = struct {};
+
+// pub const Tool = struct {
+//     type: []const u8 = "function",
+//     function: ?Function = null,
+
+//     pub const Function = struct {
+//         name: ?[]const u8 = null,
+//         description: ?[]const u8 = null,
+//         parameters: ?Parameters = null,
+
+//         pub const Parameters = struct {
+//             type: []const u8 = "object",
+//             required: ?[][]const u8 = null,
+//             properties: ?std.StringHashMap(Property) = null,
+
+//             pub const Property = struct {
+//                 type: ?[]const u8 = null,
+//                 description: ?[]const u8 = null,
+//             };
+//         };
+//     };
+// };
+
+pub const Request = struct {
+    pub const generate = struct {
+        model: []const u8,
+        stream: ?bool = null,
+        options: ?Options = null,
+        format: ?[]const u8 = null,
+        keep_alive: ?f32 = null,
+        prompt: ?[]const u8 = null,
+        suffix: ?[]const u8 = null,
+        system: ?[]const u8 = null,
+        template: ?[]const u8 = null,
+        context: ?[]u32 = null,
+        raw: ?bool = null,
+        images: ?[]Image = null,
+    };
+
+    pub const chat = struct {
+        model: []const u8,
+        tools: ?[]const Tool = null,
+        format: ?Format = null,
+        stream: bool = true,
+        keep_alive: ?u64 = null,
+        messages: []const Message = undefined,
+    };
+
+    pub const embed = struct {
+        model: []const u8,
+        input: []const u8,
+        truncate: ?bool = null,
+        options: ?Options = null,
+        keep_alive: ?f32 = null,
+    };
+
+    pub const create = struct {
+        model: []const u8,
+        stream: ?bool = null,
+        quantize: ?[]const u8 = null,
+        from: ?[]const u8 = null,
+        files: ?std.StringHashMap([]const u8) = null,
+        adapters: ?std.StringHashMap([]const u8) = null,
+        template: ?[]const u8 = null,
+        license: ?[]const u8 = null,
+        system: ?[]const u8 = null,
+        parameters: ?Options = null,
+        messages: []const Message = undefined,
+    };
+
+    pub const delete = struct {
+        model: []const u8,
+    };
+
+    pub const copy = struct {
+        source: []const u8,
+        destination: []const u8,
+    };
+
+    pub const pull = struct {
+        model: []const u8,
+        stream: ?bool = null,
+        insecure: ?bool = null,
+    };
+
+    pub const push = struct {
+        model: []const u8,
+        stream: ?bool = null,
+        insecure: ?bool = null,
     };
 };
 
-pub const Tool = struct {
-    type: []const u8 = "function",
-    function: ?Function = null,
-
-    pub const Function = struct {
-        name: ?[]const u8 = null,
-        description: ?[]const u8 = null,
-        parameters: ?Parameters = null,
-
-        pub const Parameters = struct {
-            type: []const u8 = "object",
-            required: ?[][]const u8 = null,
-            properties: ?std.StringHashMap(Property) = null,
-
-            pub const Property = struct {
-                type: ?[]const u8 = null,
-                description: ?[]const u8 = null,
-            };
-        };
+pub const Response = struct {
+    pub const generate = struct {
+        model: ?[]const u8 = null,
+        created_at: ?[]const u8 = null,
+        done: ?bool = null,
+        done_reason: ?[]const u8 = null,
+        total_duration: ?u64 = null,
+        load_duration: ?u64 = null,
+        prompt_eval_count: ?u32 = null,
+        prompt_eval_duration: ?u64 = null,
+        eval_count: ?u32 = null,
+        eval_duration: ?u64 = null,
+        response: []const u8,
+        context: ?[]u32 = null,
     };
-};
 
-pub const BaseRequest = struct {
-    model: []const u8,
-};
+    pub const chat = struct {
+        model: []const u8 = "",
+        created_at: []const u8 = "",
+        message: Message,
+        done: bool = false,
+        done_reason: ?[]const u8 = null,
+        total_duration: ?u64 = null,
+        load_duration: ?u64 = null,
+        prompt_eval_count: ?u32 = null,
+        prompt_eval_duration: ?u64 = null,
+        eval_count: ?u32 = null,
+        eval_duration: ?u64 = null,
 
-pub const BaseStreamableRequest = struct {
-    base: BaseRequest,
-    stream: ?bool = null,
-};
+        pub fn to_json(self: @This(), allocator: std.mem.Allocator) ![]const u8 {
+            var out = std.ArrayList(u8).init(allocator);
+            defer out.deinit();
+            try std.json.stringify(self, .{
+                .emit_null_optional_fields = false,
+            }, out.writer());
+            return try out.toOwnedSlice();
+        }
+    };
 
-pub const BaseGenerateRequest = struct {
-    base: BaseStreamableRequest,
-    options: ?Options = null,
-    format: ?[]const u8 = null,
-    keep_alive: ?f32 = null,
-};
+    pub const embed = struct {
+        model: ?[]const u8 = null,
+        created_at: ?[]const u8 = null,
+        done: ?bool = null,
+        done_reason: ?[]const u8 = null,
+        total_duration: ?u64 = null,
+        load_duration: ?u64 = null,
+        prompt_eval_count: ?u32 = null,
+        prompt_eval_duration: ?u64 = null,
+        eval_count: ?u32 = null,
+        eval_duration: ?u64 = null,
+        embeddings: [][]f32,
+    };
 
-pub const GenerateRequest = struct {
-    base: BaseGenerateRequest,
-    prompt: ?[]const u8 = null,
-    suffix: ?[]const u8 = null,
-    system: ?[]const u8 = null,
-    template: ?[]const u8 = null,
-    context: ?[]u32 = null,
-    raw: ?bool = null,
-    images: ?[]Image = null,
-};
+    pub const list = struct {
+        pub const Model = struct {
+            model: ?[]const u8 = null,
+            modified_at: ?i64 = null,
+            digest: ?[]const u8 = null,
+            size: ?u64 = null,
+            details: ?ModelDetails = null,
+        };
 
-pub const BaseGenerateResponse = struct {
-    model: ?[]const u8 = null,
-    created_at: ?[]const u8 = null,
-    done: ?bool = null,
-    done_reason: ?[]const u8 = null,
-    total_duration: ?u64 = null,
-    load_duration: ?u64 = null,
-    prompt_eval_count: ?u32 = null,
-    prompt_eval_duration: ?u64 = null,
-    eval_count: ?u32 = null,
-    eval_duration: ?u64 = null,
-};
+        models: []Model,
+    };
 
-pub const GenerateResponse = struct {
-    base: BaseGenerateResponse,
-    response: []const u8,
-    context: ?[]u32 = null,
-};
+    pub const show = struct {
+        modified_at: ?i64 = null,
+        template: ?[]const u8 = null,
+        modelfile: ?[]const u8 = null,
+        license: ?[]const u8 = null,
+        details: ?ModelDetails = null,
+        model_info: ?std.StringHashMap(json.Value) = null,
+        parameters: ?[]const u8 = null,
+    };
 
-pub const ChatRequest = struct {
-    base: BaseGenerateRequest,
-    messages: ?[]Message = null,
-    tools: ?[]Tool = null,
-};
+    pub const status = struct {
+        status: ?[]const u8 = null,
+    };
 
-pub const ChatResponse = struct {
-    base: BaseGenerateResponse,
-    message: Message,
-};
-
-pub const EmbedRequest = struct {
-    base: BaseRequest,
-    input: []const u8,
-    truncate: ?bool = null,
-    options: ?Options = null,
-    keep_alive: ?f32 = null,
-};
-
-pub const EmbedResponse = struct {
-    base: BaseGenerateResponse,
-    embeddings: [][]f32,
+    pub const progress = struct {
+        status: ?[]const u8 = null,
+        completed: ?u64 = null,
+        total: ?u64 = null,
+        digest: ?[]const u8 = null,
+    };
 };
 
 pub const ModelDetails = struct {
@@ -203,69 +297,4 @@ pub const ModelDetails = struct {
     families: ?[][]const u8 = null,
     parameter_size: ?[]const u8 = null,
     quantization_level: ?[]const u8 = null,
-};
-
-pub const ListResponse = struct {
-    pub const Model = struct {
-        model: ?[]const u8 = null,
-        modified_at: ?i64 = null,
-        digest: ?[]const u8 = null,
-        size: ?u64 = null,
-        details: ?ModelDetails = null,
-    };
-
-    models: []Model,
-};
-
-pub const ShowResponse = struct {
-    modified_at: ?i64 = null,
-    template: ?[]const u8 = null,
-    modelfile: ?[]const u8 = null,
-    license: ?[]const u8 = null,
-    details: ?ModelDetails = null,
-    model_info: ?std.StringHashMap(json.Value) = null,
-    parameters: ?[]const u8 = null,
-};
-
-pub const StatusResponse = struct {
-    status: ?[]const u8 = null,
-};
-
-pub const ProgressResponse = struct {
-    status: ?[]const u8 = null,
-    completed: ?u64 = null,
-    total: ?u64 = null,
-    digest: ?[]const u8 = null,
-};
-
-pub const CreateRequest = struct {
-    base: BaseStreamableRequest,
-    quantize: ?[]const u8 = null,
-    from: ?[]const u8 = null,
-    files: ?std.StringHashMap([]const u8) = null,
-    adapters: ?std.StringHashMap([]const u8) = null,
-    template: ?[]const u8 = null,
-    license: ?[]const u8 = null,
-    system: ?[]const u8 = null,
-    parameters: ?Options = null,
-    messages: ?[]Message = null,
-};
-
-pub const DeleteRequest = struct {
-    base: BaseRequest,
-};
-
-pub const CopyRequest = struct {
-    source: []const u8,
-    destination: []const u8,
-};
-
-pub const PullRequest = struct {
-    base: BaseStreamableRequest,
-    insecure: ?bool = null,
-};
-
-pub const PushRequest = struct {
-    base: BaseStreamableRequest,
-    insecure: ?bool = null,
 };

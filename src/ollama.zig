@@ -1,6 +1,6 @@
 const std = @import("std");
 
-pub const RequestOptions = @import("request_options.zig").RequestOptions;
+pub const types = @import("types.zig");
 
 pub const ChatResponse = struct {
     // Required fields
@@ -77,12 +77,12 @@ pub const Ollama = struct {
     }
 
     // model='llama3.2', messages=[{'role': 'user', 'content': 'Why is the sky blue?'}]
-    // pub fn chat(self: *Self, opts: RequestOptions.chat) !std.http.Client.Response {
-    pub fn chat(self: *Self, opts: RequestOptions.chat) !std.http.Client.Request {
+    // pub fn chat(self: *Self, opts: types.Request.chat) !std.http.Client.Response {
+    pub fn chat(self: *Self, opts: types.Request.chat) !std.http.Client.Request {
         return try self.create_request(opts);
     }
 
-    fn create_request(self: *Self, chat_options: RequestOptions.chat) !std.http.Client.Request {
+    fn create_request(self: *Self, chat_options: types.Request.chat) !std.http.Client.Request {
         // Create an HTTP client.
         var client = std.http.Client{ .allocator = self.allocator };
         // defer client.deinit();
@@ -93,11 +93,15 @@ pub const Ollama = struct {
         return try self.json_request(&client, url, chat_options);
     }
 
-    fn json_request(self: *Self, client: *std.http.Client, url: []const u8, chat_options: RequestOptions.chat) !std.http.Client.Request {
-        var string = std.ArrayList(u8).init(self.allocator);
-        defer self.allocator.free(string.items);
-        try std.json.stringify(chat_options, .{ .emit_null_optional_fields = false }, string.writer());
-        const slice = try string.toOwnedSlice();
+    fn json_request(self: *Self, client: *std.http.Client, url: []const u8, chat_options: types.Request.chat) !std.http.Client.Request {
+        var out = std.ArrayList(u8).init(self.allocator);
+        defer out.deinit();
+
+        try std.json.stringify(chat_options, .{
+            .emit_null_optional_fields = false,
+        }, out.writer());
+
+        const slice = try out.toOwnedSlice();
 
         return try fetch(client, .{ .method = .POST, .keep_alive = false, .location = .{ .url = url }, .payload = slice });
     }

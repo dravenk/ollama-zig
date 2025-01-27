@@ -7,7 +7,7 @@ pub fn main() !void {
     defer ollama.deinit();
 
     var req = try ollama.chat(.{ .model = "llama3.2", .messages = &.{
-        .{ .role = "user", .content = "Why is the sky blue?" },
+        .{ .role = .user, .content = "Why is the sky blue?" },
     } });
     defer req.deinit();
 
