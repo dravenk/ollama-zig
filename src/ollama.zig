@@ -1,6 +1,7 @@
 const std = @import("std");
 
 pub const types = @import("types.zig");
+pub const Apis = @import("apis.zig").Apis;
 
 pub const ChatResponse = struct {
     // Required fields
@@ -79,31 +80,40 @@ pub const Ollama = struct {
     // model='llama3.2', messages=[{'role': 'user', 'content': 'Why is the sky blue?'}]
     // pub fn chat(self: *Self, opts: types.Request.chat) !std.http.Client.Response {
     pub fn chat(self: *Self, opts: types.Request.chat) !std.http.Client.Request {
-        return try self.create_request(opts);
+        return try self.create_request(Apis.chat, opts);
     }
 
-    fn create_request(self: *Self, chat_options: types.Request.chat) !std.http.Client.Request {
+    pub fn generate(self: *Self, opts: types.Request.generate) !std.http.Client.Request {
+        return try self.create_request(Apis.generate, opts);
+    }
+
+    pub fn ps(self: *Self) !std.http.Client.Request {
+        return try self.create_request(Apis.ps, null);
+    }
+
+    fn create_request(self: *Self, api_type: Apis, values: anytype) !std.http.Client.Request {
         // Create an HTTP client.
         var client = std.http.Client{ .allocator = self.allocator };
         // defer client.deinit();
 
-        const api_str = "api/chat";
+        const api_str = api_type.path();
+        const method = api_type.method();
         const url = try std.fmt.allocPrint(self.allocator, "{s}://{s}:{any}/{s}", .{ self.schema, self.host, self.port, api_str });
         defer self.allocator.free(url);
-        return try self.json_request(&client, url, chat_options);
+        return try self.json_request(&client, method, url, values);
     }
 
-    fn json_request(self: *Self, client: *std.http.Client, url: []const u8, chat_options: types.Request.chat) !std.http.Client.Request {
+    fn json_request(self: *Self, client: *std.http.Client, method: std.http.Method, url: []const u8, values: anytype) !std.http.Client.Request {
         var out = std.ArrayList(u8).init(self.allocator);
         defer out.deinit();
 
-        try std.json.stringify(chat_options, .{
+        try std.json.stringify(values, .{
             .emit_null_optional_fields = false,
         }, out.writer());
 
         const slice = try out.toOwnedSlice();
 
-        return try fetch(client, .{ .method = .POST, .keep_alive = false, .location = .{ .url = url }, .payload = slice });
+        return try fetch(client, .{ .method = method, .keep_alive = false, .location = .{ .url = url }, .payload = slice });
     }
 };
 
