@@ -37,8 +37,8 @@ See [types.zig](src/types.zig) for more information on the response types.
 Response streaming can be enabled by setting `.stream = true`.
 
 ```zig
-var req = try ollama.chat(.{ .model = "llama3.2", .stream = true, .messages = &.{
-    .{ .role = "user", .content = "Why is the sky blue?" },
+try ollama.chat(.{ .model = "llama3.2", .stream = true, .messages = &.{
+    .{ .role = .user, .content = "Why is the sky blue?" },
 } });
 ```
 
