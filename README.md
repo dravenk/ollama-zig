@@ -69,12 +69,6 @@ The Ollama Zig library's API is designed around the [Ollama REST API](https://gi
 
 ```
 
-### List
-
-```zig
-ollama.list()
-```
-
 ### Show
 
 ```zig

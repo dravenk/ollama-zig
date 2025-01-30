@@ -27,6 +27,7 @@ pub fn build(b: *std.Build) void {
     }{
         .{ .name = "chat", .src = "examples/chat/main.zig" },
         .{ .name = "generate", .src = "examples/generate/main.zig" },
+        .{ .name = "show", .src = "examples/show/main.zig" },
         .{ .name = "ps", .src = "examples/ps/main.zig" },
         .{ .name = "tags", .src = "examples/tags/main.zig" },
     }) |execfg| {

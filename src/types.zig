@@ -160,6 +160,10 @@ pub const Request = struct {
         messages: []const Message = undefined,
     };
 
+    pub const show = struct {
+        model: []const u8,
+    };
+
     pub const embed = struct {
         model: []const u8,
         input: []const u8,
@@ -300,13 +304,47 @@ pub const Response = struct {
     };
 
     pub const show = struct {
-        modified_at: ?i64 = null,
-        template: ?[]const u8 = null,
-        modelfile: ?[]const u8 = null,
-        license: ?[]const u8 = null,
-        details: ?ModelDetails = null,
-        model_info: ?std.StringHashMap(json.Value) = null,
-        parameters: ?[]const u8 = null,
+        modified_at: []const u8 = "",
+        template: []const u8 = "",
+        modelfile: []const u8 = "",
+        license: []const u8 = "",
+        details: ModelDetails,
+        parameters: []const u8 = "",
+
+        // TODO
+        // model_info: ?ModelInfo = null,
+
+        pub const ModelInfo = struct {
+            general_architecture: []const u8,
+            general_basename: []const u8,
+            general_file_type: u8,
+            general_finetune: []const u8,
+            general_languages: []const u8,
+            general_parameter_count: u64,
+            general_quantization_version: u8,
+            general_size_label: []const u8,
+            general_tags: []const u8,
+            general_type: []const u8,
+            llama_attention_head_count: u8,
+            llama_attention_head_count_kv: u8,
+            llama_attention_key_length: u32,
+            llama_attention_layer_norm_rms_epsilon: f32,
+            llama_attention_value_length: u32,
+            llama_block_count: u32,
+            llama_context_length: u32,
+            llama_embedding_length: u32,
+            llama_feed_forward_length: u32,
+            llama_rope_dimension_count: u32,
+            llama_rope_freq_base: u32,
+            llama_vocab_size: u32,
+            tokenizer_ggml_bos_token_id: u32,
+            tokenizer_ggml_eos_token_id: u32,
+            tokenizer_ggml_merges: ?[]const u8,
+            tokenizer_ggml_model: []const u8,
+            tokenizer_ggml_pre: []const u8,
+            tokenizer_ggml_token_type: ?[]const u8,
+            tokenizer_ggml_tokens: ?[]const u8,
+        };
     };
 
     pub const status = struct {
@@ -322,10 +360,10 @@ pub const Response = struct {
 };
 
 pub const ModelDetails = struct {
-    parent_model: ?[]const u8 = null,
-    format: ?[]const u8 = null,
-    family: ?[]const u8 = null,
+    parent_model: []const u8 = "",
+    format: []const u8 = "",
+    family: []const u8 = "",
     families: ?[][]const u8 = null,
-    parameter_size: ?[]const u8 = null,
-    quantization_level: ?[]const u8 = null,
+    parameter_size: []const u8 = "",
+    quantization_level: []const u8 = "",
 };

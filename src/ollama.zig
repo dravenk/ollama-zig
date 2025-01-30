@@ -131,6 +131,11 @@ pub const Ollama = struct {
         return .{ .request = &req };
     }
 
+    pub fn show(self: *Self, opts: types.Request.show) !ResponseStream(types.Response.show) {
+        var req = try self.create_request(Apis.show, opts);
+        return .{ .request = &req };
+    }
+
     fn noBodyRequest(self: *Self, api_type: Apis) !std.http.Client.Request {
         var client = std.http.Client{ .allocator = self.allocator };
 
