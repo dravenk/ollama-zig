@@ -30,7 +30,7 @@ Import it in your code:
 const ollama = @import("ollama");
 ```
 
-See [types.zig](ollama/src/types.zig) for more information on the response types.
+See [types.zig](src/types.zig) for more information on the response types.
 
 ## Streaming responses
 
