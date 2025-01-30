@@ -72,7 +72,7 @@ The Ollama Zig library's API is designed around the [Ollama REST API](https://gi
 ### Show
 
 ```zig
-ollama.show('llama3.2')
+try ollama.show(.{ .model = "llama3.2" });
 ```
 
 ### Create
