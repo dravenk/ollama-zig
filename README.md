@@ -49,15 +49,24 @@ The Ollama Zig library's API is designed around the [Ollama REST API](https://gi
 ### Chat
 
 ```zig
-var req = try ollama.chat(.{ .model = "llama3.2", .stream = true, .messages = &.{
-    .{ .role = "user", .content = "Why is the sky blue?" },
-} });
+    var responses = try ollama.chat(.{ .model = "llama3.2", .stream = false, .messages = &.{
+        .{ .role = .user, .content = "Why is the sky blue?" },
+    } });
+    while (try responses.next()) |chat| {
+        const content = chat.message.content;
+        std.debug.print("{s}", .{content});
+    }
 ```
 
 ### Generate
 
 ```zig
-ollama.generate(model='llama3.2', prompt='Why is the sky blue?')
+    var responses = try ollama.generate(.{ .model = "llama3.2", .prompt = "Why is the sky blue?" });
+    while (try responses.next()) |response| {
+        const content = response.response;
+        std.debug.print("{s}", .{content});
+    }
+
 ```
 
 ### List

@@ -97,7 +97,7 @@ pub const Role = enum {
 
 pub const Message = struct {
     role: Role,
-    content: ?[]const u8 = null,
+    content: []const u8,
     images: ?[]Image = null,
     // tool_calls: ?[]ToolCall = null,
     // pub const ToolCall = struct {
@@ -137,7 +137,8 @@ pub const Tool = struct {};
 pub const Request = struct {
     pub const generate = struct {
         model: []const u8,
-        stream: ?bool = null,
+        stream: bool = true,
+
         options: ?Options = null,
         format: ?[]const u8 = null,
         keep_alive: ?f32 = null,
@@ -205,9 +206,11 @@ pub const Request = struct {
 
 pub const Response = struct {
     pub const generate = struct {
-        model: ?[]const u8 = null,
-        created_at: ?[]const u8 = null,
-        done: ?bool = null,
+        model: []const u8 = "",
+        created_at: []const u8 = "",
+        done: bool = false,
+        response: []const u8,
+
         done_reason: ?[]const u8 = null,
         total_duration: ?u64 = null,
         load_duration: ?u64 = null,
@@ -215,7 +218,6 @@ pub const Response = struct {
         prompt_eval_duration: ?u64 = null,
         eval_count: ?u32 = null,
         eval_duration: ?u64 = null,
-        response: []const u8,
         context: ?[]u32 = null,
     };
 
