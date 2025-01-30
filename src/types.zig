@@ -260,11 +260,40 @@ pub const Response = struct {
 
     pub const list = struct {
         pub const Model = struct {
-            model: ?[]const u8 = null,
-            modified_at: ?i64 = null,
-            digest: ?[]const u8 = null,
-            size: ?u64 = null,
-            details: ?ModelDetails = null,
+            name: []const u8,
+            model: []const u8,
+            size: u64,
+            digest: []const u8,
+            details: ModelDetails,
+            expires_at: ?[]const u8 = null,
+            size_vram: ?u64 = null,
+        };
+
+        models: []Model,
+    };
+
+    pub const tags = struct {
+        pub const Model = struct {
+            name: []const u8,
+            model: []const u8,
+            size: u64,
+            digest: []const u8,
+            details: ModelDetails,
+            expires_at: ?[]const u8 = null,
+            size_vram: ?u64 = null,
+        };
+
+        models: []Model,
+    };
+    pub const ps = struct {
+        pub const Model = struct {
+            name: []const u8,
+            model: []const u8,
+            size: u64,
+            digest: []const u8,
+            details: ModelDetails,
+            expires_at: ?[]const u8 = null,
+            size_vram: ?u64 = null,
         };
 
         models: []Model,

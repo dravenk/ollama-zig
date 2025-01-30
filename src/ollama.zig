@@ -32,10 +32,10 @@ fn ResponseStream(comptime T: type) type {
             defer allocator.free(buffer.items);
 
             reader.streamUntilDelimiter(buffer.writer(), '\n', null) catch |err| {
-                std.debug.print("streamUntilDelimiter error: {any}\n", .{err});
                 switch (err) {
                     // error.EndOfStream => return null,
                     error.EndOfStream => {
+                        done = true;
                         //TODO if streamable return null;
                     },
                     else => return err,
@@ -56,7 +56,11 @@ fn ResponseStream(comptime T: type) type {
                 return null;
             };
             // defer parsed.deinit(); // TODO
-            done = parsed.value.done;
+            // check ifT have a field done
+            if (@hasField(T, "done")) {
+                done = parsed.value.done;
+            }
+
             return parsed.value;
         }
     };
@@ -117,8 +121,29 @@ pub const Ollama = struct {
         return .{ .request = &req };
     }
 
-    pub fn ps(self: *Self) !std.http.Client.Request {
-        return try self.create_request(Apis.ps, null);
+    pub fn ps(self: *Self) !ResponseStream(types.Response.ps) {
+        var req = try self.noBodyRequest(Apis.ps);
+        return .{ .request = &req };
+    }
+
+    pub fn tags(self: *Self) !ResponseStream(types.Response.tags) {
+        var req = try self.noBodyRequest(Apis.tags);
+        return .{ .request = &req };
+    }
+
+    fn noBodyRequest(self: *Self, api_type: Apis) !std.http.Client.Request {
+        var client = std.http.Client{ .allocator = self.allocator };
+
+        const api_str = api_type.path();
+        const method = api_type.method();
+        const url = try std.fmt.allocPrint(self.allocator, "{s}://{s}:{any}{s}", .{ self.schema, self.host, self.port, api_str });
+        defer self.allocator.free(url);
+
+        return try fetch(&client, .{
+            .method = method,
+            .keep_alive = false,
+            .location = .{ .url = url },
+        });
     }
 
     fn create_request(self: *Self, api_type: Apis, values: anytype) !std.http.Client.Request {
@@ -129,8 +154,8 @@ pub const Ollama = struct {
         const api_str = api_type.path();
         const method = api_type.method();
         const url = try std.fmt.allocPrint(self.allocator, "{s}://{s}:{any}{s}", .{ self.schema, self.host, self.port, api_str });
-        // std.debug.print("request url: {s}\n", .{url});
         defer self.allocator.free(url);
+
         return try self.json_request(&client, method, url, values);
     }
 
