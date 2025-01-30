@@ -36,7 +36,6 @@ fn ResponseStream(comptime T: type) type {
                 switch (err) {
                     // error.EndOfStream => return null,
                     error.EndOfStream => {
-                        done = true;
                         //TODO if streamable return null;
                     },
                     else => return err,
@@ -48,13 +47,6 @@ fn ResponseStream(comptime T: type) type {
                 return null;
             }
             const response = try buffer.toOwnedSlice();
-
-            // const response = self.request.reader().readUntilDelimiterAlloc(allocator, '\n', 2048 * 10) catch |err| {
-            //     switch (err) {
-            //         error.EndOfStream => return null,
-            //         else => return err,
-            //     }
-            // };
 
             const parsed = std.json.parseFromSlice(T, allocator, response, .{
                 .ignore_unknown_fields = true,
@@ -112,32 +104,6 @@ pub const Ollama = struct {
         }
         return try responses.toOwnedSlice();
     }
-
-    // pub fn full_response(self: *Self, req: *std.http.Client.Request) ![]types.Response.chat {
-    //     var reader = req.reader();
-    //     var buffer = std.ArrayList(u8).init(self.allocator);
-    //     defer self.allocator.free(buffer.items);
-
-    //     var responses = std.ArrayList(types.Response.chat).init(self.allocator);
-    //     defer responses.deinit();
-
-    //     while (true) {
-    //         const byte = reader.readByte() catch break;
-    //         if (byte == 0) break;
-    //         try buffer.append(byte);
-
-    //         // If we see a newline, we have a full response.
-    //         if (byte == '\n') {
-    //             const response_slice = try buffer.toOwnedSlice();
-    //             const response_object = try std.json.parseFromSlice(types.Response.chat, self.allocator, response_slice, .{ .ignore_unknown_fields = true });
-    //             const ollama_response = response_object.value;
-    //             try responses.append(ollama_response);
-    //             buffer.clearRetainingCapacity();
-    //             if (ollama_response.done) break;
-    //         }
-    //     }
-    //     return try responses.toOwnedSlice();
-    // }
 
     // model='llama3.2', messages=[{'role': 'user', 'content': 'Why is the sky blue?'}]
     // pub fn chat(self: *Self, opts: types.Request.chat) !std.http.Client.Response {
