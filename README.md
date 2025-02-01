@@ -93,7 +93,7 @@ ollama.copy("llama3.2", "user/llama3.2");
 ```
 
 ### Delete
-
+(In plan)Wait for the upstream update. see https://github.com/ollama/ollama/issues/8753
 ```zig
 ollama.delete("llama3.2")
 ```
@@ -107,7 +107,7 @@ ollama.pull("llama3.2")
 ### Push
 
 ```zig
-var responses = try ollama.push(.{ .model = "dravenk/llama3.2", .stream = false });
+var responses = try ollama.push(.{ .model = "dravenk/llama3.2"});
 ```
 
 ### Embed

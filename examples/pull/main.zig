@@ -7,9 +7,9 @@ pub fn main() !void {
     var ollama = try Ollama.init(.{ .host = "localhost", .port = 11434, .allocator = allocator });
     defer ollama.deinit();
 
-    var responses = try ollama.push(.{ .model = "dravenk/llama3.2" });
+    var responses = try ollama.pull(.{ .model = "llama3.2" });
     while (try responses.next()) |response| {
         const status = response.status;
-        std.debug.print("pushed model, status:{s}\n", .{status});
+        std.debug.print("pull model, status:{s}\n", .{status});
     }
 }

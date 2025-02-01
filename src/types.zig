@@ -346,10 +346,19 @@ pub const Response = struct {
             tokenizer_ggml_tokens: ?[]const u8,
         };
     };
+
+    pub const pull = struct {
+        status: []const u8,
+        digest: ?[]const u8 = null,
+        total: ?u64 = null,
+        completed: ?u64 = null,
+    };
+
     pub const push = struct {
         status: []const u8,
         digest: ?[]const u8 = null,
-        total: ?[]const u8 = null,
+        total: ?u64 = null,
+        completed: ?u64 = null,
     };
 
     pub const status = struct {

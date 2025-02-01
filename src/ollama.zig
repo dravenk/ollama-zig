@@ -50,7 +50,8 @@ fn ResponseStream(comptime T: type) type {
 
             const parsed = std.json.parseFromSlice(T, allocator, response, .{
                 .ignore_unknown_fields = true,
-            }) catch {
+            }) catch |err| {
+                std.debug.print("error parsing response: {s} | err {any}\n", .{ response, err });
                 done = true;
                 self.request.deinit();
                 return null;
@@ -148,6 +149,11 @@ pub const Ollama = struct {
 
     pub fn push(self: *Self, opts: types.Request.push) !ResponseStream(types.Response.push) {
         var req = try self.create_request(Apis.push, opts);
+        return .{ .request = &req };
+    }
+
+    pub fn pull(self: *Self, opts: types.Request.pull) !ResponseStream(types.Response.pull) {
+        var req = try self.create_request(Apis.pull, opts);
         return .{ .request = &req };
     }
 
