@@ -147,6 +147,11 @@ pub const Ollama = struct {
         return .{ .request = &req };
     }
 
+    pub fn create(self: *Self, opts: types.Request.create) !ResponseStream(types.Response.create) {
+        var req = try self.create_request(Apis.show, opts);
+        return .{ .request = &req };
+    }
+
     pub fn push(self: *Self, opts: types.Request.push) !ResponseStream(types.Response.push) {
         var req = try self.create_request(Apis.push, opts);
         return .{ .request = &req };

@@ -177,13 +177,13 @@ pub const Request = struct {
         stream: ?bool = null,
         quantize: ?[]const u8 = null,
         from: ?[]const u8 = null,
-        files: ?std.StringHashMap([]const u8) = null,
-        adapters: ?std.StringHashMap([]const u8) = null,
+        // files: ?std.StringHashMap([]const u8) = null,
+        // adapters: ?std.StringHashMap([]const u8) = null,
         template: ?[]const u8 = null,
         license: ?[]const u8 = null,
         system: ?[]const u8 = null,
         parameters: ?Options = null,
-        messages: []const Message = undefined,
+        messages: ?[]const Message = null,
     };
 
     pub const delete = struct {
@@ -355,6 +355,13 @@ pub const Response = struct {
     };
 
     pub const push = struct {
+        status: []const u8,
+        digest: ?[]const u8 = null,
+        total: ?u64 = null,
+        completed: ?u64 = null,
+    };
+
+    pub const create = struct {
         status: []const u8,
         digest: ?[]const u8 = null,
         total: ?u64 = null,

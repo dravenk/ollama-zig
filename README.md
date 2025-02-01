@@ -107,7 +107,7 @@ ollama.pull("llama3.2")
 ### Push
 
 ```zig
-var responses = try ollama.push(.{ .model = "dravenk/llama3.2"});
+try ollama.push(.{ .model = "dravenk/llama3.2"});
 ```
 
 ### Embed
