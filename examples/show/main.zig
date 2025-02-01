@@ -7,7 +7,7 @@ pub fn main() !void {
     var ollama = try Ollama.init(.{ .host = "localhost", .port = 11434, .allocator = allocator });
     defer ollama.deinit();
 
-    var responses = try ollama.show(.{ .model = "llama3.2" });
+    var responses = try ollama.show("llama3.2");
     while (try responses.next()) |response| {
         // std.debug.print("license: {s}\n", .{response.license});
         // std.debug.print("modelfile: {s}\n", .{response.modelfile});

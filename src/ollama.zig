@@ -131,9 +131,19 @@ pub const Ollama = struct {
         return .{ .request = &req };
     }
 
-    pub fn show(self: *Self, opts: types.Request.show) !ResponseStream(types.Response.show) {
+    pub fn show(self: *Self, model: []const u8) !ResponseStream(types.Response.show) {
+        const opts: types.Request.show = .{ .model = model };
         var req = try self.create_request(Apis.show, opts);
         return .{ .request = &req };
+    }
+
+    pub fn copy(self: *Self, source: []const u8, destination: []const u8) !std.http.Status {
+        const opts: types.Request.copy = .{
+            .source = source,
+            .destination = destination,
+        };
+        const req = try self.create_request(Apis.copy, opts);
+        return req.response.status;
     }
 
     fn noBodyRequest(self: *Self, api_type: Apis) !std.http.Client.Request {
@@ -206,6 +216,7 @@ fn fetch(client: *std.http.Client, options: std.http.Client.FetchOptions) !std.h
     });
 
     if (options.payload) |payload| req.transfer_encoding = .{ .content_length = payload.len };
+
     try req.send();
 
     if (options.payload) |payload| try req.writeAll(payload);

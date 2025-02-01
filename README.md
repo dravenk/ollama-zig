@@ -72,7 +72,7 @@ The Ollama Zig library's API is designed around the [Ollama REST API](https://gi
 ### Show
 
 ```zig
-try ollama.show(.{ .model = "llama3.2" });
+try ollama.show("llama3.2");
 ```
 
 ### Create
@@ -89,25 +89,25 @@ ollama.create(model='example', modelfile=modelfile)
 ### Copy
 
 ```zig
-ollama.copy('llama3.2', 'user/llama3.2')
+ollama.copy("llama3.2", "user/llama3.2");
 ```
 
 ### Delete
 
 ```zig
-ollama.delete('llama3.2')
+ollama.delete("llama3.2")
 ```
 
 ### Pull
 
 ```zig
-ollama.pull('llama3.2')
+ollama.pull("llama3.2")
 ```
 
 ### Push
 
 ```zig
-ollama.push('user/llama3.2')
+ollama.push("user/llama3.2")
 ```
 
 ### Embed

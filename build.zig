@@ -26,6 +26,7 @@ pub fn build(b: *std.Build) void {
         src: []const u8,
     }{
         .{ .name = "chat", .src = "examples/chat/main.zig" },
+        .{ .name = "copy", .src = "examples/copy/main.zig" },
         .{ .name = "generate", .src = "examples/generate/main.zig" },
         .{ .name = "show", .src = "examples/show/main.zig" },
         .{ .name = "ps", .src = "examples/ps/main.zig" },
