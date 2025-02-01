@@ -34,6 +34,7 @@ pub fn build(b: *std.Build) void {
         .{ .name = "pull", .src = "examples/pull/main.zig" },
         .{ .name = "push", .src = "examples/push/main.zig" },
         .{ .name = "tags", .src = "examples/tags/main.zig" },
+        .{ .name = "version", .src = "examples/version/main.zig" },
     }) |execfg| {
         const exe_name = execfg.name;
 

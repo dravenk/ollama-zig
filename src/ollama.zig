@@ -136,6 +136,11 @@ pub const Ollama = struct {
         return .{ .request = &req };
     }
 
+    pub fn version(self: *Self) !ResponseStream(types.Response.version) {
+        var req = try self.noBodyRequest(Apis.version);
+        return .{ .request = &req };
+    }
+
     pub fn tags(self: *Self) !ResponseStream(types.Response.tags) {
         var req = try self.noBodyRequest(Apis.tags);
         return .{ .request = &req };

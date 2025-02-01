@@ -354,6 +354,10 @@ pub const Response = struct {
         completed: ?u64 = null,
     };
 
+    pub const version = struct {
+        version: []const u8,
+    };
+
     pub const push = struct {
         status: []const u8,
         digest: ?[]const u8 = null,
