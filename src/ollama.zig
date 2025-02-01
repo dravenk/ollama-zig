@@ -55,10 +55,19 @@ fn ResponseStream(comptime T: type) type {
                 self.request.deinit();
                 return null;
             };
+
             // defer parsed.deinit(); // TODO
-            // check ifT have a field done
+            // check if T have a field done
             if (@hasField(T, "done")) {
                 done = parsed.value.done;
+            }
+
+            // check if T have a field status
+            if (@hasField(T, "status")) {
+                // T.status == "success"
+                if (std.mem.eql(u8, parsed.value.status, "success")) {
+                    done = true;
+                }
             }
 
             return parsed.value;
@@ -134,6 +143,11 @@ pub const Ollama = struct {
     pub fn show(self: *Self, model: []const u8) !ResponseStream(types.Response.show) {
         const opts: types.Request.show = .{ .model = model };
         var req = try self.create_request(Apis.show, opts);
+        return .{ .request = &req };
+    }
+
+    pub fn push(self: *Self, opts: types.Request.push) !ResponseStream(types.Response.push) {
+        var req = try self.create_request(Apis.push, opts);
         return .{ .request = &req };
     }
 

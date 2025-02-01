@@ -7,7 +7,7 @@ pub fn main() !void {
     var ollama = try Ollama.init(.{ .host = "localhost", .port = 11434, .allocator = allocator });
     defer ollama.deinit();
 
-    const status: std.http.Status = try ollama.copy("llama3.2", "user/llama3.2");
+    const status: std.http.Status = try ollama.copy("llama3.2", "dravenk/llama3.2");
     if (status == std.http.Status.ok) {
         std.debug.print("copied model, status:{any}\n", .{status});
     } else {
