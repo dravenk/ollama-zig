@@ -48,10 +48,22 @@ fn ResponseStream(comptime T: type) type {
             }
             const response = try buffer.toOwnedSlice();
 
+            if (self.request.response.status.class() != .success) {
+                std.debug.print("Response: {s}\n", .{response});
+                done = true;
+
+                const parsed = try std.json.parseFromSlice(T.@"error", allocator, response, .{
+                    .ignore_unknown_fields = true,
+                });
+                std.debug.print("Error: {s}", .{parsed.value.@"error"});
+
+                return null;
+            }
+
             const parsed = std.json.parseFromSlice(T, allocator, response, .{
                 .ignore_unknown_fields = true,
             }) catch |err| {
-                std.debug.print("error parsing response: {s} | err {any}\n", .{ response, err });
+                std.debug.print("Parsing response: {s} | err {any}\n", .{ response, err });
                 done = true;
                 self.request.deinit();
                 return null;

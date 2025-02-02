@@ -223,6 +223,10 @@ pub const Response = struct {
         eval_count: ?u32 = null,
         eval_duration: ?u64 = null,
         context: ?[]u32 = null,
+
+        pub const @"error" = struct {
+            @"error": []const u8 = undefined,
+        };
     };
 
     pub const chat = struct {
@@ -246,6 +250,10 @@ pub const Response = struct {
             }, out.writer());
             return try out.toOwnedSlice();
         }
+
+        pub const @"error" = struct {
+            @"error": []const u8 = undefined,
+        };
     };
 
     pub const embed = struct {
@@ -260,6 +268,10 @@ pub const Response = struct {
         eval_count: ?u32 = null,
         eval_duration: ?u64 = null,
         embeddings: [][]f32,
+
+        pub const @"error" = struct {
+            @"error": []const u8 = undefined,
+        };
     };
 
     pub const list = struct {
@@ -274,6 +286,10 @@ pub const Response = struct {
         };
 
         models: []Model,
+
+        pub const @"error" = struct {
+            @"error": []const u8 = undefined,
+        };
     };
 
     pub const tags = struct {
@@ -288,6 +304,10 @@ pub const Response = struct {
         };
 
         models: []Model,
+
+        pub const @"error" = struct {
+            @"error": []const u8 = undefined,
+        };
     };
     pub const ps = struct {
         pub const Model = struct {
@@ -301,6 +321,10 @@ pub const Response = struct {
         };
 
         models: []Model,
+
+        pub const @"error" = struct {
+            @"error": []const u8 = undefined,
+        };
     };
 
     pub const show = struct {
@@ -345,6 +369,10 @@ pub const Response = struct {
             @"tokenizer.ggml.token_type": ?[]const u8,
             @"tokenizer.ggml.tokens": ?[]const u8,
         };
+
+        pub const @"error" = struct {
+            @"error": []const u8 = undefined,
+        };
     };
 
     pub const pull = struct {
@@ -352,10 +380,18 @@ pub const Response = struct {
         digest: ?[]const u8 = null,
         total: ?u64 = null,
         completed: ?u64 = null,
+
+        pub const @"error" = struct {
+            @"error": []const u8 = undefined,
+        };
     };
 
     pub const version = struct {
         version: []const u8,
+
+        pub const @"error" = struct {
+            @"error": []const u8 = undefined,
+        };
     };
 
     pub const push = struct {
@@ -363,6 +399,10 @@ pub const Response = struct {
         digest: ?[]const u8 = null,
         total: ?u64 = null,
         completed: ?u64 = null,
+
+        pub const @"error" = struct {
+            @"error": []const u8 = undefined,
+        };
     };
 
     pub const create = struct {
@@ -371,11 +411,17 @@ pub const Response = struct {
         total: ?u64 = null,
         completed: ?u64 = null,
 
-        @"error": ?[]const u8 = null,
+        pub const @"error" = struct {
+            @"error": []const u8 = undefined,
+        };
     };
 
     pub const status = struct {
         status: ?[]const u8 = null,
+
+        pub const @"error" = struct {
+            @"error": []const u8 = undefined,
+        };
     };
 
     pub const progress = struct {
@@ -383,6 +429,10 @@ pub const Response = struct {
         completed: ?u64 = null,
         total: ?u64 = null,
         digest: ?[]const u8 = null,
+
+        pub const @"error" = struct {
+            @"error": []const u8 = undefined,
+        };
     };
 };
 
