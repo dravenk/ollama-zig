@@ -104,16 +104,21 @@ ollama.pull("llama3.2")
 try ollama.push(.{ .model = "dravenk/llama3.2"});
 ```
 
-### Embed
+### Embed or Embed (batch)
 
 ```zig
-ollama.embed(model='llama3.2', input='The sky is blue because of rayleigh scattering')
-```
+    var input = std.ArrayList([]const u8).init(allocator);
+    try input.append("The sky is blue because of rayleigh scattering");
+    try input.append("Grass is green because of chlorophyll");
 
-### Embed (batch)
-
-```zig
-ollama.embed(model='llama3.2', input=['The sky is blue because of rayleigh scattering', 'Grass is green because of chlorophyll'])
+    var responses = try ollama.embed(.{
+        .model = "dravenk/llama3.2",
+        .input = try input.toOwnedSlice(),
+    });
+    while (try responses.next()) |response| {
+        std.debug.print("total_duration: {d}\n", .{response.total_duration.?});
+        std.debug.print("prompt_eval_count: {d}\n", .{response.prompt_eval_count.?});
+    }
 ```
 
 ### Ps
