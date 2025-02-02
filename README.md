@@ -78,7 +78,8 @@ try ollama.show("llama3.2");
 ### Create
 
 ```zig
-ollama.create(.{ .model = "mario", .from = "llama3.2", .system = "You are Mario from Super Mario Bros." });```
+ollama.create(.{ .model = "mario", .from = "llama3.2", .system = "You are Mario from Super Mario Bros." });
+```
 
 ### Copy
 
