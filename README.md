@@ -84,7 +84,7 @@ ollama.create(.{ .model = "mario", .from = "llama3.2", .system = "You are Mario 
 ### Copy
 
 ```zig
-ollama.copy("llama3.2", "user/llama3.2");
+try ollama.copy("llama3.2", "user/llama3.2");
 ```
 
 ### Delete
@@ -96,7 +96,7 @@ ollama.delete("llama3.2")
 ### Pull
 
 ```zig
-ollama.pull("llama3.2")
+try ollama.pull("llama3.2")
 ```
 
 ### Push
@@ -125,12 +125,12 @@ try ollama.push(.{ .model = "dravenk/llama3.2"});
 ### Ps
 
 ```zig
-ollama.ps()
+try ollama.ps()
 ```
 ### Version
 
 ```zig
-ollama.version()
+try ollama.version()
 ```
 
 ## Errors
