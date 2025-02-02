@@ -78,13 +78,7 @@ try ollama.show("llama3.2");
 ### Create
 
 ```zig
-modelfile='''
-FROM llama3.2
-SYSTEM You are mario from super mario bros.
-'''
-
-ollama.create(model='example', modelfile=modelfile)
-```
+ollama.create(.{ .model = "mario", .from = "llama3.2", .system = "You are Mario from Super Mario Bros." });```
 
 ### Copy
 
@@ -127,7 +121,11 @@ ollama.embed(model='llama3.2', input=['The sky is blue because of rayleigh scatt
 ```zig
 ollama.ps()
 ```
+### Version
 
+```zig
+ollama.version()
+```
 
 ## Errors
 

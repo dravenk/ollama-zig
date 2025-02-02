@@ -57,6 +57,9 @@ fn ResponseStream(comptime T: type) type {
                 return null;
             };
 
+            // const parsed = try std.json.parseFromSlice(std.json.Value, allocator, response, .{ .ignore_unknown_fields = true });
+            // defer parsed.deinit();
+
             // defer parsed.deinit(); // TODO
             // check if T have a field done
             if (@hasField(T, "done")) {
