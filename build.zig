@@ -28,6 +28,7 @@ pub fn build(b: *std.Build) void {
         .{ .name = "chat", .src = "examples/chat/main.zig" },
         .{ .name = "copy", .src = "examples/copy/main.zig" },
         .{ .name = "create", .src = "examples/create/main.zig" },
+        .{ .name = "embed", .src = "examples/embed/main.zig" },
         .{ .name = "generate", .src = "examples/generate/main.zig" },
         .{ .name = "show", .src = "examples/show/main.zig" },
         .{ .name = "ps", .src = "examples/ps/main.zig" },

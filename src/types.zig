@@ -166,7 +166,7 @@ pub const Request = struct {
 
     pub const embed = struct {
         model: []const u8,
-        input: []const u8,
+        input: [][]const u8,
         truncate: ?bool = null,
         options: ?Options = null,
         keep_alive: ?f32 = null,
@@ -257,10 +257,8 @@ pub const Response = struct {
     };
 
     pub const embed = struct {
-        model: ?[]const u8 = null,
-        created_at: ?[]const u8 = null,
-        done: ?bool = null,
-        done_reason: ?[]const u8 = null,
+        model: []const u8,
+
         total_duration: ?u64 = null,
         load_duration: ?u64 = null,
         prompt_eval_count: ?u32 = null,

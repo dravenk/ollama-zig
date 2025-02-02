@@ -151,6 +151,11 @@ pub const Ollama = struct {
         return .{ .request = &req };
     }
 
+    pub fn embed(self: *Self, opts: types.Request.embed) !ResponseStream(types.Response.embed) {
+        var req = try self.create_request(Apis.embed, opts);
+        return .{ .request = &req };
+    }
+
     pub fn version(self: *Self) !ResponseStream(types.Response.version) {
         var req = try self.noBodyRequest(Apis.version);
         return .{ .request = &req };
