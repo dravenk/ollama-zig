@@ -99,40 +99,8 @@ pub const Message = struct {
     role: Role,
     content: []const u8,
     images: ?[]Image = null,
-    // tool_calls: ?[]ToolCall = null,
-    // pub const ToolCall = struct {
-    //     function: Function,
-
-    //     pub const Function = struct {
-    //         name: []const u8,
-    //         arguments: std.StringHashMap(json.Value),
-    //     };
-    // };
 };
-
 pub const Tool = struct {};
-
-// pub const Tool = struct {
-//     type: []const u8 = "function",
-//     function: ?Function = null,
-
-//     pub const Function = struct {
-//         name: ?[]const u8 = null,
-//         description: ?[]const u8 = null,
-//         parameters: ?Parameters = null,
-
-//         pub const Parameters = struct {
-//             type: []const u8 = "object",
-//             required: ?[][]const u8 = null,
-//             properties: ?std.StringHashMap(Property) = null,
-
-//             pub const Property = struct {
-//                 type: ?[]const u8 = null,
-//                 description: ?[]const u8 = null,
-//             };
-//         };
-//     };
-// };
 
 pub const Request = struct {
     pub const generate = struct {

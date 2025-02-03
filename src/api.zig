@@ -1,12 +1,7 @@
 const std = @import("std");
 const Ollama = @import("ollama.zig").Ollama;
 
-const ApiEntry = struct {
-    method: std.http.Method,
-    path: []const u8,
-};
-
-pub const Apis = enum {
+pub const Api = enum {
     // Generate a completion
     // see https://github.com/ollama/ollama/blob/main/docs/api.md#generate-a-completion
     // POST /api/generate
@@ -84,8 +79,8 @@ pub const Apis = enum {
     // GET /api/version
     version,
 
-    pub fn method(apis: Apis) std.http.Method {
-        switch (apis) {
+    pub fn method(api: Api) std.http.Method {
+        switch (api) {
             .generate => return .POST,
             .chat => return .POST,
             .create => return .POST,
@@ -104,8 +99,8 @@ pub const Apis = enum {
         }
     }
 
-    pub fn path(apis: Apis) []const u8 {
-        switch (apis) {
+    pub fn path(api: Api) []const u8 {
+        switch (api) {
             .generate => return "/api/generate",
             .chat => return "/api/chat",
             .create => return "/api/create",

@@ -78,7 +78,7 @@ try ollama.show("llama3.2");
 ### Create
 
 ```zig
-ollama.create(.{ .model = "mario", .from = "llama3.2", .system = "You are Mario from Super Mario Bros." });
+try ollama.create(.{ .model = "mario", .from = "llama3.2", .system = "You are Mario from Super Mario Bros." });
 ```
 
 ### Copy
@@ -90,7 +90,7 @@ try ollama.copy("llama3.2", "user/llama3.2");
 ### Delete
 (In plan)Wait for the upstream update. see https://github.com/ollama/ollama/issues/8753
 ```zig
-ollama.delete("llama3.2")
+try ollama.delete("llama3.2")
 ```
 
 ### Pull

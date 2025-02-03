@@ -1,18 +1,7 @@
 const std = @import("std");
 
 pub const types = @import("types.zig");
-pub const Apis = @import("apis.zig").Apis;
-
-fn readUntilDelimiter(allocator: std.mem.Allocator, reader: *std.io.AnyReader, delimiter: u8) !?[]u8 {
-    var buffer = std.ArrayList(u8).init(allocator);
-    defer allocator.free(buffer.items);
-    while (true) {
-        const byte = reader.readByte() catch break;
-        if (byte == 0 or byte == delimiter) break;
-        try buffer.append(byte);
-    }
-    return try buffer.toOwnedSlice();
-}
+pub const Api = @import("api.zig").Api;
 
 fn ResponseStream(comptime T: type) type {
     return struct {
@@ -69,10 +58,6 @@ fn ResponseStream(comptime T: type) type {
                 return null;
             };
 
-            // const parsed = try std.json.parseFromSlice(std.json.Value, allocator, response, .{ .ignore_unknown_fields = true });
-            // defer parsed.deinit();
-
-            // defer parsed.deinit(); // TODO
             // check if T have a field done
             if (@hasField(T, "done")) {
                 done = parsed.value.done;
@@ -80,7 +65,6 @@ fn ResponseStream(comptime T: type) type {
 
             // check if T have a field status
             if (@hasField(T, "status")) {
-                // T.status == "success"
                 if (std.mem.eql(u8, parsed.value.status, "success")) {
                     done = true;
                 }
@@ -108,82 +92,55 @@ pub const Ollama = struct {
         self.allocator = undefined;
     }
 
-    pub fn wait(self: *Self, req: *std.http.Client.Request, comptime T: type) ![]T {
-        var reader = req.reader();
-        var buffer = std.ArrayList(u8).init(self.allocator);
-        defer self.allocator.free(buffer.items);
-
-        var responses = std.ArrayList(T).init(self.allocator);
-        defer responses.deinit();
-
-        while (true) {
-            const byte = reader.readByte() catch break;
-            if (byte == 0) break;
-            try buffer.append(byte);
-
-            // If we see a newline, we have a full response.
-            if (byte == '\n') {
-                const response_slice = try buffer.toOwnedSlice();
-                const response_object = try std.json.parseFromSlice(T, self.allocator, response_slice, .{ .ignore_unknown_fields = true });
-                const ollama_response = response_object.value;
-                try responses.append(ollama_response);
-                buffer.clearRetainingCapacity();
-                if (ollama_response.done) break;
-            }
-        }
-        return try responses.toOwnedSlice();
-    }
-
     // model='llama3.2', messages=[{'role': 'user', 'content': 'Why is the sky blue?'}]
-    // pub fn chat(self: *Self, opts: types.Request.chat) !std.http.Client.Response {
     pub fn chat(self: *Self, opts: types.Request.chat) !ResponseStream(types.Response.chat) {
-        var req = try self.create_request(Apis.chat, opts);
+        var req = try self.createRequest(Api.chat, opts);
         return .{ .request = &req };
     }
 
     pub fn generate(self: *Self, opts: types.Request.generate) !ResponseStream(types.Response.generate) {
-        var req = try self.create_request(Apis.generate, opts);
+        var req = try self.createRequest(Api.generate, opts);
         return .{ .request = &req };
     }
 
     pub fn ps(self: *Self) !ResponseStream(types.Response.ps) {
-        var req = try self.noBodyRequest(Apis.ps);
+        var req = try self.noBodyRequest(Api.ps);
         return .{ .request = &req };
     }
 
     pub fn embed(self: *Self, opts: types.Request.embed) !ResponseStream(types.Response.embed) {
-        var req = try self.create_request(Apis.embed, opts);
+        var req = try self.createRequest(Api.embed, opts);
         return .{ .request = &req };
     }
 
     pub fn version(self: *Self) !ResponseStream(types.Response.version) {
-        var req = try self.noBodyRequest(Apis.version);
+        var req = try self.noBodyRequest(Api.version);
         return .{ .request = &req };
     }
 
     pub fn tags(self: *Self) !ResponseStream(types.Response.tags) {
-        var req = try self.noBodyRequest(Apis.tags);
+        var req = try self.noBodyRequest(Api.tags);
         return .{ .request = &req };
     }
 
     pub fn show(self: *Self, model: []const u8) !ResponseStream(types.Response.show) {
         const opts: types.Request.show = .{ .model = model };
-        var req = try self.create_request(Apis.show, opts);
+        var req = try self.createRequest(Api.show, opts);
         return .{ .request = &req };
     }
 
     pub fn create(self: *Self, opts: types.Request.create) !ResponseStream(types.Response.create) {
-        var req = try self.create_request(Apis.show, opts);
+        var req = try self.createRequest(Api.show, opts);
         return .{ .request = &req };
     }
 
     pub fn push(self: *Self, opts: types.Request.push) !ResponseStream(types.Response.push) {
-        var req = try self.create_request(Apis.push, opts);
+        var req = try self.createRequest(Api.push, opts);
         return .{ .request = &req };
     }
 
     pub fn pull(self: *Self, opts: types.Request.pull) !ResponseStream(types.Response.pull) {
-        var req = try self.create_request(Apis.pull, opts);
+        var req = try self.createRequest(Api.pull, opts);
         return .{ .request = &req };
     }
 
@@ -192,11 +149,11 @@ pub const Ollama = struct {
             .source = source,
             .destination = destination,
         };
-        const req = try self.create_request(Apis.copy, opts);
+        const req = try self.createRequest(Api.copy, opts);
         return req.response.status;
     }
 
-    fn noBodyRequest(self: *Self, api_type: Apis) !std.http.Client.Request {
+    fn noBodyRequest(self: *Self, api_type: Api) !std.http.Client.Request {
         var client = std.http.Client{ .allocator = self.allocator };
 
         const api_str = api_type.path();
@@ -211,8 +168,7 @@ pub const Ollama = struct {
         });
     }
 
-    fn create_request(self: *Self, api_type: Apis, values: anytype) !std.http.Client.Request {
-        // Create an HTTP client.
+    fn createRequest(self: *Self, api_type: Api, values: anytype) !std.http.Client.Request {
         var client = std.http.Client{ .allocator = self.allocator };
         // defer client.deinit();
 
@@ -243,13 +199,13 @@ pub const Ollama = struct {
     }
 };
 
-/// see  std.http.Client.fetch
+//
 fn fetch(client: *std.http.Client, options: std.http.Client.FetchOptions) !std.http.Client.Request {
     const uri = switch (options.location) {
         .url => |u| try std.Uri.parse(u),
         .uri => |u| u,
     };
-    // var server_header_buffer: []u8 = options.server_header_buffer;
+
     var server_header_buffer: [1024]u8 = undefined;
 
     const method: std.http.Method = options.method orelse
