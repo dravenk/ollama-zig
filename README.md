@@ -1,6 +1,6 @@
 # Ollama Zig Library
 
-The Ollama Zig library provides the easiest way to integrate Zig 0.13+ projects with [Ollama](https://github.com/ollama/ollama).
+The Ollama Zig library provides the easiest way to integrate Zig 0.14+ projects with [Ollama](https://github.com/ollama/ollama).
 
 ## Prerequisites
 

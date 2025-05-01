@@ -1,6 +1,7 @@
 .{
-    .name = "ollama-zig",
-    .version = "0.0.0",
+    .name = .ollama,
+    .fingerprint = 0xc6a12be8e0ad4858,
+    .version = "0.0.1",
     .dependencies = .{},
     .paths = .{
         "build.zig",
