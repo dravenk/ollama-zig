@@ -8,6 +8,10 @@ fn ResponseStream(comptime T: type) type {
         request: *std.http.Client.Request,
         var done: bool = false;
 
+        pub fn deinit(self: @This()) void {
+            self.request.client.allocator.destroy(self.request);
+        }
+
         pub fn next(self: @This()) !?T {
             const allocator = self.request.client.allocator;
             if (done) {
@@ -94,54 +98,54 @@ pub const Ollama = struct {
 
     // model='llama3.2', messages=[{'role': 'user', 'content': 'Why is the sky blue?'}]
     pub fn chat(self: *Self, opts: types.Request.chat) !ResponseStream(types.Response.chat) {
-        var req = try self.createRequest(Api.chat, opts);
-        return .{ .request = &req };
+        const req = try self.createRequest(Api.chat, opts);
+        return .{ .request = req };
     }
 
     pub fn generate(self: *Self, opts: types.Request.generate) !ResponseStream(types.Response.generate) {
-        var req = try self.createRequest(Api.generate, opts);
-        return .{ .request = &req };
+        const req = try self.createRequest(Api.generate, opts);
+        return .{ .request = req };
     }
 
     pub fn ps(self: *Self) !ResponseStream(types.Response.ps) {
-        var req = try self.noBodyRequest(Api.ps);
-        return .{ .request = &req };
+        const req = try self.noBodyRequest(Api.ps);
+        return .{ .request = req };
     }
 
     pub fn embed(self: *Self, opts: types.Request.embed) !ResponseStream(types.Response.embed) {
-        var req = try self.createRequest(Api.embed, opts);
-        return .{ .request = &req };
+        const req = try self.createRequest(Api.embed, opts);
+        return .{ .request = req };
     }
 
     pub fn version(self: *Self) !ResponseStream(types.Response.version) {
-        var req = try self.noBodyRequest(Api.version);
-        return .{ .request = &req };
+        const req = try self.noBodyRequest(Api.version);
+        return .{ .request = req };
     }
 
     pub fn tags(self: *Self) !ResponseStream(types.Response.tags) {
-        var req = try self.noBodyRequest(Api.tags);
-        return .{ .request = &req };
+        const req = try self.noBodyRequest(Api.tags);
+        return .{ .request = req };
     }
 
     pub fn show(self: *Self, model: []const u8) !ResponseStream(types.Response.show) {
         const opts: types.Request.show = .{ .model = model };
-        var req = try self.createRequest(Api.show, opts);
-        return .{ .request = &req };
+        const req = try self.createRequest(Api.show, opts);
+        return .{ .request = req };
     }
 
     pub fn create(self: *Self, opts: types.Request.create) !ResponseStream(types.Response.create) {
-        var req = try self.createRequest(Api.show, opts);
-        return .{ .request = &req };
+        const req = try self.createRequest(Api.show, opts);
+        return .{ .request = req };
     }
 
     pub fn push(self: *Self, opts: types.Request.push) !ResponseStream(types.Response.push) {
-        var req = try self.createRequest(Api.push, opts);
-        return .{ .request = &req };
+        const req = try self.createRequest(Api.push, opts);
+        return .{ .request = req };
     }
 
     pub fn pull(self: *Self, opts: types.Request.pull) !ResponseStream(types.Response.pull) {
-        var req = try self.createRequest(Api.pull, opts);
-        return .{ .request = &req };
+        const req = try self.createRequest(Api.pull, opts);
+        return .{ .request = req };
     }
 
     pub fn copy(self: *Self, source: []const u8, destination: []const u8) !std.http.Status {
@@ -150,26 +154,31 @@ pub const Ollama = struct {
             .destination = destination,
         };
         const req = try self.createRequest(Api.copy, opts);
+        defer self.allocator.destroy(req);
         return req.response.status;
     }
 
-    fn noBodyRequest(self: *Self, api_type: Api) !std.http.Client.Request {
-        var client = std.http.Client{ .allocator = self.allocator };
+    fn noBodyRequest(self: *Self, api_type: Api) !*std.http.Client.Request {
+        const client = try self.allocator.create(std.http.Client);
+        errdefer self.allocator.destroy(client);
+        client.* = std.http.Client{ .allocator = self.allocator };
 
         const api_str = api_type.path();
         const method = api_type.method();
         const url = try std.fmt.allocPrint(self.allocator, "{s}://{s}:{any}{s}", .{ self.schema, self.host, self.port, api_str });
         defer self.allocator.free(url);
 
-        return try fetch(&client, .{
+        return try fetch(client, .{
             .method = method,
             .keep_alive = false,
             .location = .{ .url = url },
         });
     }
 
-    fn createRequest(self: *Self, api_type: Api, values: anytype) !std.http.Client.Request {
-        var client = std.http.Client{ .allocator = self.allocator };
+    fn createRequest(self: *Self, api_type: Api, values: anytype) !*std.http.Client.Request {
+        const client = try self.allocator.create(std.http.Client);
+        errdefer self.allocator.destroy(client);
+        client.* = std.http.Client{ .allocator = self.allocator };
         // defer client.deinit();
 
         const api_str = api_type.path();
@@ -177,10 +186,10 @@ pub const Ollama = struct {
         const url = try std.fmt.allocPrint(self.allocator, "{s}://{s}:{any}{s}", .{ self.schema, self.host, self.port, api_str });
         defer self.allocator.free(url);
 
-        return try self.json_request(&client, method, url, values);
+        return try self.json_request(client, method, url, values);
     }
 
-    fn json_request(self: *Self, client: *std.http.Client, method: std.http.Method, url: []const u8, values: anytype) !std.http.Client.Request {
+    fn json_request(self: *Self, client: *std.http.Client, method: std.http.Method, url: []const u8, values: anytype) !*std.http.Client.Request {
         var out = std.ArrayList(u8).init(self.allocator);
         defer out.deinit();
 
@@ -200,19 +209,23 @@ pub const Ollama = struct {
 };
 
 //
-fn fetch(client: *std.http.Client, options: std.http.Client.FetchOptions) !std.http.Client.Request {
+fn fetch(client: *std.http.Client, options: std.http.Client.FetchOptions) !*std.http.Client.Request {
     const uri = switch (options.location) {
         .url => |u| try std.Uri.parse(u),
         .uri => |u| u,
     };
 
-    var server_header_buffer: [1024]u8 = undefined;
+    const server_header_buffer = try client.allocator.alloc(u8, 1024);
+    defer client.allocator.free(server_header_buffer);
 
     const method: std.http.Method = options.method orelse
         if (options.payload != null) .POST else .GET;
 
-    var req = try client.open(method, uri, .{
-        .server_header_buffer = options.server_header_buffer orelse &server_header_buffer,
+    const req = try client.allocator.create(std.http.Client.Request);
+    errdefer client.allocator.destroy(req);
+
+    req.* = try client.open(method, uri, .{
+        .server_header_buffer = options.server_header_buffer orelse server_header_buffer,
         .redirect_behavior = options.redirect_behavior orelse
             if (options.payload == null) @enumFromInt(3) else .unhandled,
         .headers = options.headers,
