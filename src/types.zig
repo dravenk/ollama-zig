@@ -31,26 +31,8 @@ pub const Format = enum {
     text,
 };
 
-pub const Image = struct {
-    value: union(enum) {
-        path: []const u8,
-        bytes: []const u8,
-        base64: []const u8,
-    },
-
-    pub fn fromPath(path: []const u8) !Image {
-        const file = try std.fs.openFileAbsolute(path, .{});
-        defer file.close();
-
-        const contents = try file.readToEndAlloc(std.heap.page_allocator, std.math.maxInt(usize));
-        defer std.heap.page_allocator.free(contents);
-
-        var encoded: [base64.Base64Encoder.calcSize(contents.len)]u8 = undefined;
-        _ = base64.standard.Encoder.encode(&encoded, contents);
-
-        return Image{ .value = .{ .base64 = try std.heap.page_allocator.dupe(u8, &encoded) } };
-    }
-};
+// Base64 encoded images
+pub const Image = []const u8;
 
 pub const Options = struct {
     // Load time options
